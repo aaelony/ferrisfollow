@@ -8,6 +8,11 @@ use std::{error::Error, path::Path};
 use workspace::{AnalysisConfig, analyze_repository};
 
 fn main() -> Result<(), Box<dyn Error>> {
+    println!(
+        "{} version {}\n a way to explore your Rust program visually\n\n",
+        env!("CARGO_PKG_NAME"),
+        env!("CARGO_PKG_VERSION")
+    );
     let dir = Path::new(".");
 
     let config = AnalysisConfig {

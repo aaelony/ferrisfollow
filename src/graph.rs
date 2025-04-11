@@ -122,6 +122,7 @@ pub fn write_dot_file(
             "    {} [label=\"{}\", color=\"{}\", penwidth=2.0];",
             i.index(),
             simplify_name(&graph[i]).replace("\"", ""),
+            // simplify_name(&graph[i]),
             color
         )?;
     }
