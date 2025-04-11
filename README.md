@@ -7,4 +7,10 @@ From the directory with your `Cargo.toml` file, it will:
 - Follow the call chain through functions and methods
 - Handle cross-module calls
 - Track struct method calls
-- Create a visually appealing call graph with colored sequence indicators
+- Create a visually appealing call graph with colored sequence indicators using Graphviz.
+
+## Example
+
+For this program repo itself, will produce:
+
+![Example Call Graph](example_call_graph.png)
