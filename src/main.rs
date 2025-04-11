@@ -6,6 +6,11 @@ use std::{error::Error, path::Path};
 use walkdir::WalkDir;
 
 fn main() -> Result<(), Box<dyn Error>> {
+    println!(
+        "{} version {}\n a way to explore your Rust program visually\n\n",
+        env!("CARGO_PKG_NAME"),
+        env!("CARGO_PKG_VERSION")
+    );
     let dir = Path::new(".");
     let visitor = utils::analyze_directory(dir)?;
     let graph = graph::create_call_graph(&visitor);
