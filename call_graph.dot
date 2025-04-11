@@ -1,16 +1,16 @@
 digraph {
     node [shape=box];
 
-    0 [label="graph::create_call_graph", color="#7c3aed", penwidth=2.0];
-    1 [label="graph::write_dot_file", color="#166534", penwidth=2.0];
-    2 [label="main", color="black", penwidth=2.0];
-    3 [label="utils::analyze_directory", color="#1e40af", penwidth=2.0];
-    4 [label="utils::check_graphviz_installed", color="#fbbf24", penwidth=2.0];
-    5 [label="utils::generate_png", color="#991b1b", penwidth=2.0];
+    0 [label="main", color="black", penwidth=2.0];
+    1 [label="analyze_repository", color="#1e40af", penwidth=2.0];
+    2 [label="create_combined_graph", color="#60a5fa", penwidth=2.0];
+    3 [label="get_crate_info", color="#a78bfa", penwidth=2.0];
+    4 [label="get_entry_points", color="#86efac", penwidth=2.0];
+    5 [label="get_cross_crate_calls", color="#ea580c", penwidth=2.0];
 
-    2 -> 3 [label="1", color="#1e40af", fontcolor="#1e40af", penwidth=2.0];
-    2 -> 0 [label="2", color="#7c3aed", fontcolor="#7c3aed", penwidth=2.0];
-    2 -> 1 [label="3", color="#166534", fontcolor="#166534", penwidth=2.0];
-    2 -> 4 [label="4", color="#fbbf24", fontcolor="#fbbf24", penwidth=2.0];
-    2 -> 5 [label="5", color="#991b1b", fontcolor="#991b1b", penwidth=2.0];
+    0 -> 1 [label="1", color="#1e40af", fontcolor="#1e40af", penwidth=2.0];
+    0 -> 2 [label="2", color="#60a5fa", fontcolor="#60a5fa", penwidth=2.0];
+    0 -> 3 [label="3", color="#a78bfa", fontcolor="#a78bfa", penwidth=2.0];
+    0 -> 4 [label="5", color="#86efac", fontcolor="#86efac", penwidth=2.0];
+    0 -> 5 [label="6", color="#ea580c", fontcolor="#ea580c", penwidth=2.0];
 }

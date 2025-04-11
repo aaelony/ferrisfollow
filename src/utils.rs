@@ -1,6 +1,4 @@
-use crate::visitor::FunctionCallVisitor;
-use std::{error::Error, path::Path, process::Command};
-use walkdir::WalkDir;
+use std::{error::Error, process::Command};
 
 pub fn generate_png(dot_file: &str, png_file: &str) -> Result<(), Box<dyn Error>> {
     let output = Command::new("dot")
@@ -26,37 +24,22 @@ pub fn check_graphviz_installed() -> bool {
         .unwrap_or(false)
 }
 
-pub fn analyze_directory(dir: &Path) -> Result<FunctionCallVisitor, Box<dyn Error>> {
-    let mut visitor = FunctionCallVisitor::default();
+// Helper function to format module paths
+pub fn format_module_path(components: &[String]) -> String {
+    components.join("::")
+}
 
-    // First, process lib.rs if it exists
-    let lib_path = dir.join("src/lib.rs");
-    if lib_path.exists() {
-        visitor.process_module(&lib_path)?;
-    }
+// Helper function to extract crate name from a fully qualified path
+pub fn extract_crate_name(path: &str) -> &str {
+    path.split("::").next().unwrap_or("")
+}
 
-    // Then process main.rs
-    let main_path = dir.join("src/main.rs");
-    if main_path.exists() {
-        visitor.process_module(&main_path)?;
-    }
+// Helper function to determine if a path is a test module
+pub fn is_test_module(path: &str) -> bool {
+    path.contains("tests") || path.contains("test_") || path.ends_with("_test")
+}
 
-    // Process all other .rs files
-    for entry in WalkDir::new(dir.join("src"))
-        .into_iter()
-        .filter_map(|e| e.ok())
-        .filter(|e| {
-            e.path().extension().map_or(false, |ext| ext == "rs")
-                && e.path()
-                    .file_name()
-                    .map_or(false, |name| name != "main.rs" && name != "lib.rs")
-        })
-    {
-        visitor.process_module(entry.path())?;
-    }
-
-    // Start analysis from main
-    visitor.process_function("main");
-
-    Ok(visitor)
+// Helper function to determine if a path is an example
+pub fn is_example_module(path: &str) -> bool {
+    path.contains("examples") || path.contains("example_") || path.ends_with("_example")
 }

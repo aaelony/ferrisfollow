@@ -1,15 +1,21 @@
 use crate::visitor::FunctionCallVisitor;
 use petgraph::{
     Graph,
-    dot::{Config, Dot},
+    //  dot::{Config, Dot},
     prelude::*,
 };
 use std::{
     collections::{HashMap, HashSet},
     error::Error,
-    fs,
+    fs::File,
     io::Write,
 };
+
+fn simplify_name(name: &str) -> String {
+    // Remove our internal workspace-related prefixes
+    name.replace("WorkspaceAnalysis::", "")
+        .replace("WorkspaceAnalyzer::", "")
+}
 
 pub fn create_call_graph(visitor: &FunctionCallVisitor) -> Graph<String, usize, Directed> {
     let mut graph = Graph::new();
@@ -47,9 +53,8 @@ pub fn write_dot_file(
     graph: &Graph<String, usize, Directed>,
     filename: &str,
 ) -> Result<(), Box<dyn Error>> {
-    let mut file = fs::File::create(filename)?;
+    let mut file = File::create(filename)?;
 
-    // Flowbite color palette
     let colors = [
         // Blues
         "#1e40af", // Blue-800
@@ -95,13 +100,18 @@ pub fn write_dot_file(
     // Create a map to store the last incoming edge color for each node
     let mut node_colors: HashMap<NodeIndex, &str> = HashMap::new();
 
+    // Track unique edges to avoid duplicates
+    let mut seen_edges: HashSet<(NodeIndex, NodeIndex)> = HashSet::new();
     // First pass: determine node colors based on incoming edges
     for e in graph.edge_indices() {
-        let (_, to) = graph.edge_endpoints(e).unwrap();
-        let sequence = graph.edge_weight(e).unwrap();
-        let color_index =
-            ((sequence - 1) as f32 * (colors.len() - 1) as f32 / (num_calls - 1) as f32) as usize;
-        node_colors.insert(to, colors[color_index]);
+        let (from, to) = graph.edge_endpoints(e).unwrap();
+        if seen_edges.insert((from, to)) {
+            // Only process if this is a new edge
+            let sequence = graph.edge_weight(e).unwrap();
+            let color_index = ((sequence - 1) as f32 * (colors.len() - 1) as f32
+                / (num_calls - 1) as f32) as usize;
+            node_colors.insert(to, colors[color_index]);
+        }
     }
 
     // Add nodes with colors
@@ -111,31 +121,37 @@ pub fn write_dot_file(
             file,
             "    {} [label=\"{}\", color=\"{}\", penwidth=2.0];",
             i.index(),
-            graph[i].replace("\"", ""),
+            simplify_name(&graph[i]).replace("\"", ""),
             color
         )?;
     }
 
     writeln!(file)?;
 
+    // Reset seen edges for edge writing
+    seen_edges.clear();
+
     // Add edges with colors
     for e in graph.edge_indices() {
         let (from, to) = graph.edge_endpoints(e).unwrap();
-        let sequence = graph.edge_weight(e).unwrap();
+        if seen_edges.insert((from, to)) {
+            // Only write if this is a new edge
+            let sequence = graph.edge_weight(e).unwrap();
 
-        let color_index =
-            ((sequence - 1) as f32 * (colors.len() - 1) as f32 / (num_calls - 1) as f32) as usize;
-        let color = colors[color_index];
+            let color_index = ((sequence - 1) as f32 * (colors.len() - 1) as f32
+                / (num_calls - 1) as f32) as usize;
+            let color = colors[color_index];
 
-        writeln!(
-            file,
-            "    {} -> {} [label=\"{}\", color=\"{}\", fontcolor=\"{}\", penwidth=2.0];",
-            from.index(),
-            to.index(),
-            sequence,
-            color,
-            color
-        )?;
+            writeln!(
+                file,
+                "    {} -> {} [label=\"{}\", color=\"{}\", fontcolor=\"{}\", penwidth=2.0];",
+                from.index(),
+                to.index(),
+                sequence,
+                color,
+                color
+            )?;
+        }
     }
 
     writeln!(file, "}}")?;
