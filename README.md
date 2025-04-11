@@ -13,4 +13,4 @@ From the directory with your `Cargo.toml` file, it will:
 
 For this program repo itself, will produce:
 
-![Example Call Graph](example_call_graph.png)
+![](call_graph.png)
